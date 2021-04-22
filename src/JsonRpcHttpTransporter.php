@@ -81,13 +81,18 @@ class JsonRpcHttpTransporter implements TransporterInterface
             return $schema;
         });
         $url = $schema . $uri;
-        $response = $this->getClient()->post($url, [
+        $options = [
             RequestOptions::HEADERS => [
                 'Content-Type' => 'application/json',
             ],
             RequestOptions::HTTP_ERRORS => false,
             RequestOptions::BODY => $data,
-        ]);
+        ];
+        $token = config('consul.token', '');
+        if (! empty($token)) {
+            $options[RequestOptions::HEADERS]['X-Consul-Token'] = $token;
+        }
+        $response = $this->getClient()->post($url, $options);
         if ($response->getStatusCode() === 200) {
             return (string) $response->getBody();
         }
